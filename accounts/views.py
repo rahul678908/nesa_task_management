@@ -6,7 +6,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class LoginAPIView(APIView):
-
+    """
+    POST /api/auth/login/
+    Body: { "username": "...", "password": "..." }
+    Returns JWT access token + user role.
+    """
 
     def post(self, request):
         username = request.data.get('username')

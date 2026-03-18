@@ -8,7 +8,7 @@ from .serializers import TaskSerializer, TaskUpdateSerializer, TaskReportSeriali
 from accounts.permissions import IsUser, IsAdminOrSuperAdmin
 
 
-# ── GET /api/tasks/ ───────────
+# ── GET /api/tasks/ ────────────────────────────────────────────────────────────
 
 class TaskListAPIView(APIView):
     """
@@ -24,7 +24,7 @@ class TaskListAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-# ── PUT /api/tasks/{id}/ ───────────
+# ── PUT /api/tasks/{id}/ ───────────────────────────────────────────────────────
 
 class TaskUpdateAPIView(APIView):
     """
@@ -49,7 +49,7 @@ class TaskUpdateAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# ── GET /api/tasks/{id}/report/ ──────────
+# ── GET /api/tasks/{id}/report/ ────────────────────────────────────────────────
 
 class TaskReportAPIView(APIView):
     """

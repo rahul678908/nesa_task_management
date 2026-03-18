@@ -73,14 +73,7 @@ task_management/
 
 ## Getting Started
 
-### 1. Unzip the project
-
-```bash
-unzip task_management_project.zip
-cd task_management
-```
-
-### 2. Create a virtual environment and activate it
+### 1. Create a virtual environment and activate it
 
 ```bash
 python -m venv venv
@@ -92,20 +85,20 @@ venv\Scripts\activate
 source venv/bin/activate
 ```
 
-### 3. Install the dependencies
+### 2. Install the dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Set up the database
+### 3. Set up the database
 
 ```bash
 python manage.py makemigrations accounts tasks
 python manage.py migrate
 ```
 
-### 5. Create your first SuperAdmin
+### 4. Create your first SuperAdmin
 
 ```bash
 python manage.py createsuperuser
@@ -113,7 +106,7 @@ python manage.py createsuperuser
 
 > Just fill in a username and password when prompted. Because `is_superuser` gets set to `True`, the app automatically assigns that account the `superadmin` role.
 
-### 6. Run the server
+### 5. Run the server
 
 ```bash
 python manage.py runserver

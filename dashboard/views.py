@@ -8,7 +8,7 @@ from accounts.models import User, ADMIN_PERMISSION_CHOICES
 from tasks.models import Task
 
 
-# ── Decorators ──────
+# ── Decorators ─────────────────────────────────────────────────────────────────
 
 def require_superadmin(view_func):
     def wrapper(request, *args, **kwargs):
@@ -26,21 +26,38 @@ def require_admin_or_superadmin(view_func):
     return wrapper
 
 
-# ── Auth ──────────
+# ── Auth ───────────────────────────────────────────────────────────────────────
 
 def login_view(request):
+    # If already logged in, send to the right dashboard.
+    # Only redirect if the user actually HAS a dashboard — prevents loop for 'user' role.
     if request.user.is_authenticated:
-        return _redirect_by_role(request.user)
+        if request.user.role == 'superadmin':
+            return redirect('/superadmin/dashboard/')
+        elif request.user.role == 'admin':
+            return redirect('/admin-panel/dashboard/')
+        # role == 'user' has no web dashboard; just show the login page normally
 
     if request.method == 'POST':
-        user = authenticate(
-            username=request.POST.get('username'),
-            password=request.POST.get('password')
-        )
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '').strip()
+
+        if not username or not password:
+            return render(request, 'auth/login.html', {'error': 'Please enter your username and password.'})
+
+        user = authenticate(username=username, password=password)
         if user:
             login(request, user)
-            return _redirect_by_role(user)
-        return render(request, 'auth/login.html', {'error': 'Invalid credentials.'})
+            if user.role == 'superadmin':
+                return redirect('/superadmin/dashboard/')
+            elif user.role == 'admin':
+                return redirect('/admin-panel/dashboard/')
+            else:
+                # Regular users only use the API, not the web panel
+                return render(request, 'auth/login.html', {
+                    'error': 'This panel is for Admins and SuperAdmins only. Use the API to access your tasks.'
+                })
+        return render(request, 'auth/login.html', {'error': 'Invalid username or password.'})
 
     return render(request, 'auth/login.html')
 
@@ -50,15 +67,7 @@ def logout_view(request):
     return redirect('/login/')
 
 
-def _redirect_by_role(user):
-    if user.role == 'superadmin':
-        return redirect('/superadmin/dashboard/')
-    elif user.role == 'admin':
-        return redirect('/admin-panel/dashboard/')
-    return redirect('/login/')
-
-
-# ── SuperAdmin: Dashboard ───────
+# ── SuperAdmin: Dashboard ──────────────────────────────────────────────────────
 
 @login_required(login_url='/login/')
 @require_superadmin
@@ -75,7 +84,7 @@ def superadmin_dashboard(request):
     return render(request, 'superadmin/dashboard.html', context)
 
 
-# ── SuperAdmin: User Management ─────
+# ── SuperAdmin: User Management ────────────────────────────────────────────────
 
 @login_required(login_url='/login/')
 @require_superadmin
@@ -136,7 +145,6 @@ def superadmin_change_role(request, user_id):
             if new_role == 'admin':
                 user.assigned_admin = None
             else:
-
                 user.admin_permissions = []
             user.save()
             messages.success(request, f'{user.username} is now a {new_role}.')
@@ -157,29 +165,21 @@ def superadmin_assign_user_to_admin(request):
     return redirect('/superadmin/dashboard/')
 
 
-# ── SuperAdmin: Admin Permissions ────────
+# ── SuperAdmin: Admin Permissions ──────────────────────────────────────────────
 
 @login_required(login_url='/login/')
 @require_superadmin
 def superadmin_manage_permissions(request, admin_id):
-    """
-    GET  — show the permissions form for a specific admin.
-    POST — save the checked permissions.
-    """
     admin = get_object_or_404(User, id=admin_id, role='admin')
 
     if request.method == 'POST':
-
         granted = [
             key for key, _ in ADMIN_PERMISSION_CHOICES
             if request.POST.get(key)
         ]
         admin.admin_permissions = granted
         admin.save()
-        messages.success(
-            request,
-            f'Permissions updated for {admin.username}.'
-        )
+        messages.success(request, f'Permissions updated for {admin.username}.')
         return redirect('/superadmin/dashboard/')
 
     return render(request, 'superadmin/manage_permissions.html', {
@@ -220,7 +220,6 @@ def admin_dashboard(request):
         'users': users,
         'total_tasks': tasks.count(),
         'completed_tasks': tasks.filter(status='completed').count(),
-        # Pass permissions so the template can hide/show buttons
         'can_create_task':  request.user.has_admin_permission('can_create_task'),
         'can_delete_task':  request.user.has_admin_permission('can_delete_task'),
         'can_view_reports': request.user.has_admin_permission('can_view_reports'),
@@ -231,7 +230,6 @@ def admin_dashboard(request):
 @login_required(login_url='/login/')
 @require_admin_or_superadmin
 def admin_create_task(request):
-    # Permission check
     if not request.user.has_admin_permission('can_create_task'):
         return HttpResponseForbidden("You don't have permission to create tasks.")
 
@@ -256,7 +254,6 @@ def admin_create_task(request):
         if request.user.role == 'admin' and assigned_user.assigned_admin != request.user:
             return HttpResponseForbidden("You can only assign tasks to your own users.")
 
-        # Also check can_assign_task if assigning to a specific user
         if not request.user.has_admin_permission('can_assign_task'):
             return HttpResponseForbidden("You don't have permission to assign tasks.")
 
