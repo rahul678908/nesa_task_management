@@ -1,8 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-
-# All possible permissions that can be granted to an Admin
 ADMIN_PERMISSION_CHOICES = [
     ('can_create_task',  'Create Tasks'),
     ('can_delete_task',  'Delete Tasks'),
@@ -20,9 +18,6 @@ class User(AbstractUser):
 
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='user')
 
-    # Stores a list of permission keys granted to this admin by SuperAdmin.
-    # e.g. ["can_create_task", "can_view_reports"]
-    # Only meaningful when role == 'admin'. Ignored for other roles.
     admin_permissions = models.JSONField(default=list, blank=True)
 
     assigned_admin = models.ForeignKey(

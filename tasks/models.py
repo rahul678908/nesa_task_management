@@ -27,7 +27,7 @@ class Task(models.Model):
     due_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
 
-    # Completion fields — filled only when status → completed
+
     completion_report = models.TextField(blank=True, null=True)
     worked_hours = models.DecimalField(
         max_digits=6, decimal_places=2, null=True, blank=True

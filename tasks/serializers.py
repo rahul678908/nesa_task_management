@@ -24,10 +24,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
 
 class TaskUpdateSerializer(serializers.ModelSerializer):
-    """
-    Used for PUT /tasks/{id}/
-    Enforces completion_report + worked_hours when status == 'completed'.
-    """
+
 
     class Meta:
         model = Task

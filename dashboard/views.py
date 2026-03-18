@@ -8,7 +8,7 @@ from accounts.models import User, ADMIN_PERMISSION_CHOICES
 from tasks.models import Task
 
 
-# ── Decorators ─────────────────────────────────────────────────────────────────
+# ── Decorators ──────
 
 def require_superadmin(view_func):
     def wrapper(request, *args, **kwargs):
@@ -26,7 +26,7 @@ def require_admin_or_superadmin(view_func):
     return wrapper
 
 
-# ── Auth ───────────────────────────────────────────────────────────────────────
+# ── Auth ──────────
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -58,7 +58,7 @@ def _redirect_by_role(user):
     return redirect('/login/')
 
 
-# ── SuperAdmin: Dashboard ──────────────────────────────────────────────────────
+# ── SuperAdmin: Dashboard ───────
 
 @login_required(login_url='/login/')
 @require_superadmin
@@ -75,7 +75,7 @@ def superadmin_dashboard(request):
     return render(request, 'superadmin/dashboard.html', context)
 
 
-# ── SuperAdmin: User Management ────────────────────────────────────────────────
+# ── SuperAdmin: User Management ─────
 
 @login_required(login_url='/login/')
 @require_superadmin
@@ -136,7 +136,7 @@ def superadmin_change_role(request, user_id):
             if new_role == 'admin':
                 user.assigned_admin = None
             else:
-                # Clear admin permissions when demoting
+
                 user.admin_permissions = []
             user.save()
             messages.success(request, f'{user.username} is now a {new_role}.')
@@ -157,7 +157,7 @@ def superadmin_assign_user_to_admin(request):
     return redirect('/superadmin/dashboard/')
 
 
-# ── SuperAdmin: Admin Permissions ──────────────────────────────────────────────
+# ── SuperAdmin: Admin Permissions ────────
 
 @login_required(login_url='/login/')
 @require_superadmin
@@ -169,7 +169,7 @@ def superadmin_manage_permissions(request, admin_id):
     admin = get_object_or_404(User, id=admin_id, role='admin')
 
     if request.method == 'POST':
-        # Collect all checked permission keys from the form checkboxes
+
         granted = [
             key for key, _ in ADMIN_PERMISSION_CHOICES
             if request.POST.get(key)

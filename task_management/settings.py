@@ -84,7 +84,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_URL = '/login/'
 
-# ── Django REST Framework ──────────────────────────────────────────────────────
+# ── Django REST Framework ────────
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -94,7 +94,7 @@ REST_FRAMEWORK = {
     ),
 }
 
-# ── SimpleJWT ──────────────────────────────────────────────────────────────────
+# ── SimpleJWT ─────────────────
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=12),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
@@ -102,7 +102,7 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-# ── Messages ───────────────────────────────────────────────────────────────────
+# ── Messages ────────────
 from django.contrib.messages import constants as messages
 MESSAGE_TAGS = {
     messages.ERROR: 'error',

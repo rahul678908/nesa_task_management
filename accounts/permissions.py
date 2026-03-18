@@ -1,10 +1,10 @@
 from rest_framework.permissions import BasePermission
 
 
-# ── Hardcoded role checks ──────────────────────────────────────────────────────
+# ── role checks ───────
 
 class IsUser(BasePermission):
-    """Grants access only to regular users (role == 'user')."""
+
     message = "Access restricted to users only."
 
     def has_permission(self, request, view):
@@ -16,7 +16,7 @@ class IsUser(BasePermission):
 
 
 class IsAdmin(BasePermission):
-    """Grants access only to admins (role == 'admin')."""
+
     message = "Access restricted to admins only."
 
     def has_permission(self, request, view):
@@ -28,7 +28,7 @@ class IsAdmin(BasePermission):
 
 
 class IsSuperAdmin(BasePermission):
-    """Grants access only to superadmins (role == 'superadmin')."""
+
     message = "Access restricted to superadmins only."
 
     def has_permission(self, request, view):
@@ -40,7 +40,7 @@ class IsSuperAdmin(BasePermission):
 
 
 class IsAdminOrSuperAdmin(BasePermission):
-    """Grants access to admins AND superadmins."""
+
     message = "Access restricted to admins and superadmins."
 
     def has_permission(self, request, view):
@@ -52,7 +52,7 @@ class IsAdminOrSuperAdmin(BasePermission):
 
 
 class IsAuthenticatedUser(BasePermission):
-    """Grants access to any authenticated user regardless of role."""
+
     message = "Authentication required."
 
     def has_permission(self, request, view):
