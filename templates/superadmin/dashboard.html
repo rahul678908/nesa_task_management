@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% block title %}SuperAdmin Dashboard{% endblock %}
+
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+    <h1>⚡ SuperAdmin Dashboard</h1>
+    <a href="/superadmin/users/create/" class="btn btn-primary">+ New User / Admin</a>
+</div>
+
+<!-- Stats -->
+<div class="stats">
+    <div class="stat-card"><div class="num">{{ users.count }}</div><div class="label">Total Users</div></div>
+    <div class="stat-card"><div class="num">{{ admins.count }}</div><div class="label">Total Admins</div></div>
+    <div class="stat-card"><div class="num">{{ total_tasks }}</div><div class="label">Total Tasks</div></div>
+    <div class="stat-card"><div class="num">{{ completed_tasks }}</div><div class="label">Completed</div></div>
+    <div class="stat-card"><div class="num">{{ pending_tasks }}</div><div class="label">Pending</div></div>
+</div>
+
+<!-- Admins Table -->
+<div class="card">
+    <h2>👔 Admins</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Permissions</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for admin in admins %}
+            <tr>
+                <td>{{ admin.id }}</td>
+                <td>{{ admin.username }}</td>
+                <td>{{ admin.email|default:"—" }}</td>
+                <td>
+                    {% if admin.admin_permissions %}
+                        {% for perm in admin.admin_permissions %}
+                            <span class="badge" style="background:#e8f0fe;color:#3c4aad;margin:2px 2px 2px 0;display:inline-block;">
+                                {% for key, label in permission_choices %}
+                                    {% if key == perm %}{{ label }}{% endif %}
+                                {% endfor %}
+                            </span>
+                        {% endfor %}
+                    {% else %}
+                        <span style="color:#aaa;font-size:.85rem;">No permissions assigned</span>
+                    {% endif %}
+                </td>
+                <td style="white-space:nowrap;">
+                    <a href="/superadmin/admins/{{ admin.id }}/permissions/" class="btn btn-primary" style="margin-right:4px;">🔐 Permissions</a>
+                    <form method="post" action="/superadmin/users/{{ admin.id }}/role/" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="role" value="user" />
+                        <button class="btn btn-secondary" onclick="return confirm('Demote {{ admin.username }} to User?')">Demote</button>
+                    </form>
+                    <form method="post" action="/superadmin/users/{{ admin.id }}/delete/" style="display:inline;margin-left:4px;">
+                        {% csrf_token %}
+                        <button class="btn btn-danger" onclick="return confirm('Delete {{ admin.username }}?')">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="5" style="text-align:center;color:#888;">No admins found.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Users Table -->
+<div class="card">
+    <h2>👥 Users</h2>
+    <table>
+        <thead>
+            <tr><th>#</th><th>Username</th><th>Email</th><th>Assigned Admin</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+        {% for u in users %}
+            <tr>
+                <td>{{ u.id }}</td>
+                <td>{{ u.username }}</td>
+                <td>{{ u.email|default:"—" }}</td>
+                <td>{{ u.assigned_admin.username|default:"Unassigned" }}</td>
+                <td>
+                    <form method="post" action="/superadmin/users/{{ u.id }}/role/" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="role" value="admin" />
+                        <button class="btn btn-success" onclick="return confirm('Promote {{ u.username }} to Admin?')">Promote</button>
+                    </form>
+                    <form method="post" action="/superadmin/users/{{ u.id }}/delete/" style="display:inline;margin-left:4px;">
+                        {% csrf_token %}
+                        <button class="btn btn-danger" onclick="return confirm('Delete {{ u.username }}?')">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="5" style="text-align:center;color:#888;">No users found.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Assign User to Admin -->
+<div class="card">
+    <h2>🔗 Assign User to Admin</h2>
+    <form method="post" action="/superadmin/assign/" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+        {% csrf_token %}
+        <div class="form-group" style="flex:1;min-width:200px;margin:0;">
+            <label>Select User</label>
+            <select name="user_id" required>
+                <option value="">— Choose user —</option>
+                {% for u in users %}<option value="{{ u.id }}">{{ u.username }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="form-group" style="flex:1;min-width:200px;margin:0;">
+            <label>Assign to Admin</label>
+            <select name="admin_id" required>
+                <option value="">— Choose admin —</option>
+                {% for a in admins %}<option value="{{ a.id }}">{{ a.username }}</option>{% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Assign</button>
+    </form>
+</div>
+
+<!-- All Tasks -->
+<div class="card">
+    <h2>📋 All Tasks</h2>
+    <table>
+        <thead>
+            <tr><th>#</th><th>Title</th><th>Assigned To</th><th>Created By</th><th>Due Date</th><th>Status</th><th>Report</th></tr>
+        </thead>
+        <tbody>
+        {% for task in tasks %}
+            <tr>
+                <td>{{ task.id }}</td>
+                <td>{{ task.title }}</td>
+                <td>{{ task.assigned_to.username }}</td>
+                <td>{{ task.created_by.username|default:"—" }}</td>
+                <td>{{ task.due_date|default:"—" }}</td>
+                <td><span class="badge badge-{{ task.status }}">{{ task.get_status_display }}</span></td>
+                <td>
+                    {% if task.status == 'completed' %}
+                        <a href="/superadmin/tasks/{{ task.id }}/report/" class="btn btn-secondary">View</a>
+                    {% else %}—{% endif %}
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="7" style="text-align:center;color:#888;">No tasks found.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

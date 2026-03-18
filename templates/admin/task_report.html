@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Task Report — Admin{% endblock %}
+
+{% block content %}
+<div style="max-width:680px;margin:0 auto;">
+    <h1 style="margin-bottom:24px;">📄 Task Completion Report</h1>
+    <div class="card">
+        <table style="margin-bottom:20px;">
+            <tr><th style="width:160px;">Task Title</th><td>{{ task.title }}</td></tr>
+            <tr><th>Assigned To</th><td>{{ task.assigned_to.username }}</td></tr>
+            <tr><th>Due Date</th><td>{{ task.due_date|default:"—" }}</td></tr>
+            <tr><th>Status</th><td><span class="badge badge-completed">Completed</span></td></tr>
+            <tr><th>Worked Hours</th><td><strong>{{ task.worked_hours }} hrs</strong></td></tr>
+            <tr>
+                <th>Completion Report</th>
+                <td style="white-space:pre-line;">{{ task.completion_report }}</td>
+            </tr>
+            <tr><th>Completed On</th><td>{{ task.updated_at|date:"N j, Y  H:i" }}</td></tr>
+        </table>
+        <a href="/admin-panel/dashboard/" class="btn btn-secondary">← Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}

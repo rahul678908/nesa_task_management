@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Create Task — Admin{% endblock %}
+
+{% block content %}
+<div style="max-width:540px;margin:0 auto;">
+    <h1 style="margin-bottom:24px;">📝 Create & Assign Task</h1>
+    <div class="card">
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Task Title *</label>
+                <input type="text" name="title" required placeholder="Enter task title" />
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="description" placeholder="Describe the task..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Assign To *</label>
+                <select name="assigned_to" required>
+                    <option value="">— Select user —</option>
+                    {% for u in users %}
+                        <option value="{{ u.id }}">{{ u.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Due Date</label>
+                <input type="date" name="due_date" />
+            </div>
+            <div style="display:flex;gap:12px;">
+                <button type="submit" class="btn btn-primary">Create Task</button>
+                <a href="/admin-panel/dashboard/" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

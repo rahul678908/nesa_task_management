@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}Edit {{ edit_user.username }} — SuperAdmin{% endblock %}
+
+{% block content %}
+<div style="max-width:520px;margin:0 auto;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+        <a href="/superadmin/users/" style="color:#888;text-decoration:none;font-size:1.2rem;">←</a>
+        <div>
+            <h1>✏️ Edit User</h1>
+            <p style="color:#888;font-size:.85rem;margin-top:2px;">
+                Editing <strong>{{ edit_user.username }}</strong>
+                <span class="role-tag role-{{ edit_user.role }}">{{ edit_user.role }}</span>
+            </p>
+        </div>
+    </div>
+
+    <div class="card">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label>Username *</label>
+                <input type="text" name="username" value="{{ edit_user.username }}" required />
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" value="{{ edit_user.email }}" placeholder="Enter email (optional)" />
+            </div>
+
+            <div class="form-group">
+                <label>New Password <span style="color:#aaa;font-weight:400;">(leave blank to keep current)</span></label>
+                <input type="password" name="password" placeholder="Enter new password" />
+            </div>
+
+            {% if edit_user.role == 'user' %}
+            <div class="form-group">
+                <label>Assigned Admin</label>
+                <select name="assigned_admin">
+                    <option value="">— None —</option>
+                    {% for admin in admins %}
+                        <option value="{{ admin.id }}"
+                            {% if edit_user.assigned_admin and edit_user.assigned_admin.id == admin.id %}selected{% endif %}>
+                            {{ admin.username }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+
+            <div style="display:flex;gap:10px;margin-top:8px;">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <a href="/superadmin/users/" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="card" style="border:1px solid #f5c6cb;margin-top:0;">
+        <h3 style="color:#721c24;margin-bottom:12px;">⚠️ Danger Zone</h3>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            {% if edit_user.role == 'user' %}
+                <form method="post" action="/superadmin/users/{{ edit_user.id }}/role/">
+                    {% csrf_token %}
+                    <input type="hidden" name="role" value="admin" />
+                    <button class="btn btn-success"
+                        onclick="return confirm('Promote {{ edit_user.username }} to Admin?')">
+                        Promote to Admin
+                    </button>
+                </form>
+            {% elif edit_user.role == 'admin' %}
+                <form method="post" action="/superadmin/users/{{ edit_user.id }}/role/">
+                    {% csrf_token %}
+                    <input type="hidden" name="role" value="user" />
+                    <button class="btn btn-secondary"
+                        onclick="return confirm('Demote {{ edit_user.username }} to User?')">
+                        Demote to User
+                    </button>
+                </form>
+            {% endif %}
+
+            <form method="post" action="/superadmin/users/{{ edit_user.id }}/delete/">
+                {% csrf_token %}
+                <button class="btn btn-danger"
+                    onclick="return confirm('Permanently delete {{ edit_user.username }}? This cannot be undone.')">
+                    Delete Account
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

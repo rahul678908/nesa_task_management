@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% block title %}User Management — SuperAdmin{% endblock %}
+
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+    <div>
+        <h1>👥 User Management</h1>
+        <p style="color:#888;margin-top:4px;font-size:.9rem;">
+            Create, edit, delete, and manage roles for all users and admins.
+        </p>
+    </div>
+    <div style="display:flex;gap:10px;">
+        <a href="/superadmin/users/create/" class="btn btn-primary">+ New User / Admin</a>
+        <a href="/superadmin/dashboard/" class="btn btn-secondary">← Dashboard</a>
+    </div>
+</div>
+
+<!-- Stats bar -->
+<div class="stats" style="margin-bottom:28px;">
+    <div class="stat-card">
+        <div class="num">{{ users.count }}</div>
+        <div class="label">Total Users</div>
+    </div>
+    <div class="stat-card">
+        <div class="num">{{ admins.count }}</div>
+        <div class="label">Total Admins</div>
+    </div>
+    <div class="stat-card">
+        <div class="num">{{ users|length|add:admins|length }}</div>
+        <div class="label">All Accounts</div>
+    </div>
+</div>
+
+<!-- ── Admins ── -->
+<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h2>👔 Admins <span style="font-size:.85rem;color:#888;font-weight:400;">({{ admins.count }})</span></h2>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Users Assigned</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for admin in admins %}
+            <tr>
+                <td style="color:#aaa;">{{ admin.id }}</td>
+                <td><strong>{{ admin.username }}</strong></td>
+                <td>{{ admin.email|default:"—" }}</td>
+                <td>
+                    <span style="background:#e9ecef;padding:2px 10px;border-radius:20px;font-size:.8rem;">
+                        {{ admin.assigned_users.count }} user{{ admin.assigned_users.count|pluralize }}
+                    </span>
+                </td>
+                <td>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                        <!-- Edit -->
+                        <a href="/superadmin/users/{{ admin.id }}/edit/" class="btn btn-primary" style="padding:5px 12px;font-size:.8rem;">Edit</a>
+                        <!-- Demote to User -->
+                        <form method="post" action="/superadmin/users/{{ admin.id }}/role/" style="display:inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="role" value="user" />
+                            <button class="btn btn-secondary" style="padding:5px 12px;font-size:.8rem;"
+                                onclick="return confirm('Demote {{ admin.username }} to User?')">
+                                Demote
+                            </button>
+                        </form>
+                        <!-- Delete -->
+                        <form method="post" action="/superadmin/users/{{ admin.id }}/delete/" style="display:inline;">
+                            {% csrf_token %}
+                            <button class="btn btn-danger" style="padding:5px 12px;font-size:.8rem;"
+                                onclick="return confirm('Delete admin {{ admin.username }}? This cannot be undone.')">
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="5" style="text-align:center;color:#aaa;padding:28px;">
+                    No admins yet. <a href="/superadmin/users/create/">Create one</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- ── Users ── -->
+<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h2>🙋 Users <span style="font-size:.85rem;color:#888;font-weight:400;">({{ users.count }})</span></h2>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Assigned Admin</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for u in users %}
+            <tr>
+                <td style="color:#aaa;">{{ u.id }}</td>
+                <td><strong>{{ u.username }}</strong></td>
+                <td>{{ u.email|default:"—" }}</td>
+                <td>
+                    {% if u.assigned_admin %}
+                        <span class="role-tag role-admin">{{ u.assigned_admin.username }}</span>
+                    {% else %}
+                        <span style="color:#aaa;font-size:.85rem;">Unassigned</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                        <!-- Edit -->
+                        <a href="/superadmin/users/{{ u.id }}/edit/" class="btn btn-primary" style="padding:5px 12px;font-size:.8rem;">Edit</a>
+                        <!-- Promote to Admin -->
+                        <form method="post" action="/superadmin/users/{{ u.id }}/role/" style="display:inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="role" value="admin" />
+                            <button class="btn btn-success" style="padding:5px 12px;font-size:.8rem;"
+                                onclick="return confirm('Promote {{ u.username }} to Admin?')">
+                                Promote
+                            </button>
+                        </form>
+                        <!-- Delete -->
+                        <form method="post" action="/superadmin/users/{{ u.id }}/delete/" style="display:inline;">
+                            {% csrf_token %}
+                            <button class="btn btn-danger" style="padding:5px 12px;font-size:.8rem;"
+                                onclick="return confirm('Delete user {{ u.username }}? This cannot be undone.')">
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="5" style="text-align:center;color:#aaa;padding:28px;">
+                    No users yet. <a href="/superadmin/users/create/">Create one</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- ── Assign User to Admin ── -->
+<div class="card">
+    <h2 style="margin-bottom:16px;">🔗 Reassign User to Admin</h2>
+    <form method="post" action="/superadmin/assign/" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+        {% csrf_token %}
+        <div class="form-group" style="flex:1;min-width:200px;margin:0;">
+            <label>Select User</label>
+            <select name="user_id" required>
+                <option value="">— Choose user —</option>
+                {% for u in users %}
+                    <option value="{{ u.id }}">
+                        {{ u.username }}
+                        {% if u.assigned_admin %}(currently → {{ u.assigned_admin.username }}){% endif %}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group" style="flex:1;min-width:200px;margin:0;">
+            <label>Assign to Admin</label>
+            <select name="admin_id" required>
+                <option value="">— Choose admin —</option>
+                {% for a in admins %}
+                    <option value="{{ a.id }}">{{ a.username }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary" style="height:38px;">Assign</button>
+    </form>
+</div>
+{% endblock %}
